@@ -187,7 +187,7 @@ static void showBrightnessLevelPaneOnDisplay (uint brightnessLevelInSubsteps, CG
                 }
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    [self incrementScreenBrightnessWithStep: brightnessDelta inAllScreens:isShiftModifierPressed];
+                    [self incrementScreenBrightnessWithStep: brightnessDelta inAllScreens:!isShiftModifierPressed];
                 });
             }
         }
