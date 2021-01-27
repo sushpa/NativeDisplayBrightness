@@ -284,6 +284,7 @@ void shutdownSignalHandler(int signal)
     
     BOOL isCurrentBrighnessAvailableFromExternalDisplay = NO;
     uint maxExternalDisplayBrightness = 100;
+    uint maxExternalDisplayContrast = 100;
     NSString* currentExternalDisplayDefaultsKey;
     
     // Get the current brightness
@@ -292,7 +293,8 @@ void shutdownSignalHandler(int signal)
     if (! isBuiltinDisplay) {
         
         uint currentBrightness = 50;
-        
+        uint currentContrast = 50;
+
         // Get the current display brightness
         // Fist, try user defaults to avoid waiting for a timeout if the display is known not to support DDCRead;
         // If user defaults are not set, read the brightness value from the display
@@ -310,6 +312,7 @@ void shutdownSignalHandler(int signal)
         
         if (! isCurrentBrighnessReadFromDefaults) {
             isCurrentBrighnessAvailableFromExternalDisplay = get_control(currentDisplayId, BRIGHTNESS, &currentBrightness, &maxExternalDisplayBrightness);
+            get_control(currentDisplayId, CONTRAST, &currentContrast, &maxExternalDisplayContrast);
         }
 
         currentBrightnessInSubsteps = round((double)currentBrightness / (double)maxExternalDisplayBrightness * (double)brightnessSubstepsCount);
@@ -341,6 +344,10 @@ void shutdownSignalHandler(int signal)
                 
                     // NSLog(@"New brightness: %d", newBrightness);
                     
+                    uint newContrast =(uint) round(0.7 * (double)newBrightnessInSubsteps / (double)brightnessSubstepsCount * (double)maxExternalDisplayContrast);
+                    set_control(currentDisplayId, CONTRAST, newContrast);
+                    // NSLog(@"New brightness: %d", newBrightness);
+
                     if  (! isCurrentBrighnessAvailableFromExternalDisplay) {
                         // Save the new brighness value
                         NSMutableDictionary* newDisplayBrighnesses;
@@ -352,8 +359,6 @@ void shutdownSignalHandler(int signal)
                         else {
                             newDisplayBrighnesses = [NSMutableDictionary new];
                         }
-                        
-                        newDisplayBrighnesses [currentExternalDisplayDefaultsKey] = @(newBrightness);
                         
                         [NSUserDefaults.standardUserDefaults setObject:newDisplayBrighnesses forKey:kDisplaysBrightnessDefaultsKey];
                     }
